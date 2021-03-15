@@ -3,45 +3,45 @@ import java.util.LinkedList;
 import java.util.List;
 
 class Bender {
-        //We initiate the global variables
-        casilla comenzar; //The initial position
-        casilla meta; //The target position
-        casilla actual; //The current position
-        casilla[][] mapa; //All the possible positions
+        //Iniciamos las variables globales
+        casilla comenzar; //La posicion inicial
+        casilla meta; //La posición objetivo
+        casilla actual; //La posición actual
+        casilla[][] mapa; //Todas las posiciones posibles
 
-        boolean invertir = false; //The current direction priority
+        boolean invertir = false; //La prioridad de dirección actual
         char[] direcciones = new char[]{
                 'S',
                 'E',
                 'N',
                 'W'
-        }; //The default direction priority
-        char direccion = direcciones[0]; //The current direction, by default South
-        String camino = ""; //Here we store the direction in which we take every movement
+        }; //La prioridad de dirección predeterminada
+        char direccion = direcciones[0]; //La dirección actual, por defecto Sur
+        String camino = ""; //Aquí almacenamos la dirección en la que tomamos cada movimiento
 
-        List<casilla> teleList = new ArrayList<casilla>(); //List of the teleporters
+        List<casilla> teleList = new ArrayList<casilla>(); //Lista de teletransportadores
 
 
         public Bender(String mapa) {
-            String[] split = mapa.split("\n"); //We store the map as a array of rows, we define the rows by the line jumps('\n')
+            String[] split = mapa.split("\n"); //Almacenamos el mapa como una matriz de filas, definimos las filas por los saltos de línea('\n')
 
-            //We have the rows, now to make the map we need the columns
+            //Tenemos las filas, ahora para hacer el mapa necesitamos las columnas
             int maximo = 0;
             for (String s : split) {
                 if (s.length() > maximo) {
-                    maximo = s.length();//The longest column
+                    maximo = s.length();//La columna más larga
                 }
             }
 
-            this.mapa = new casilla[split.length][maximo];//The map is a empty bi-dimensional array
+            this.mapa = new casilla[split.length][maximo];//El mapa es una matriz bidimensional vacía
 
-            //Create a new cell for each position on the map and store it in its respective position
+            //Cree una nueva celda para cada posición en el mapa y guárdela en su posición respectiva
             for (int i = 0; i < split.length; i++) {
                 for (int j = 0; j < split[i].length(); j++) {
 
                     this.mapa[i][j] = new casilla(split[i].charAt(j), i, j);
 
-                    //Store the start, goal and teleport cells
+                    //Almacene las células de inicio, objetivo y teletransporte
                     if (this.mapa[i][j].type.equals("start")) {
                         comenzar = this.mapa[i][j];
                     }
@@ -55,45 +55,45 @@ class Bender {
             }
         }
 
-        //Here starts the brute force method
+        //Aquí comienza el método de fuerza bruta
         public String run() {
             if (!testMap()) {
                 return null;
             }
-            //Establish the current cell at the starting point
+            //Establecemos la celda actual en el punto de partida
             actual = comenzar;
-            //Check if we are at the goal, if not...
+            //Compruebe si estamos en la meta, si no...
             while (actual != meta) {
-                //look forward, if not a wall...
+                //mirar hacia adelante, si no una pared...
                 if (checkWall()) {
-                    //move forward
+                    //Avanzar
                     move();
-                    //If we moved into a teleporter...
+                    //Si nos mudamos a un teletransportador...
                     if (actual.type.equals("teleport")) {
-                        //teleport
+                        //teletransportador
                         teleport();
                     }
-                    //If we moved into a invert cell
+                    //Si nos mudamos a una celda invertida
                     if (actual.type.equals("invert")) {
-                        //invert
+                        //invertida
                         invert();
                     }
 
                 } else {
-                    //If we see a wall turn around until we don't see one
+                    //Si vemos una pared dar la vuelta hasta que no veamos una
                     turn();
                 }
-                //Check if we are in a infinite loop
+                //Compruebe si estamos en un bucle infinito
                 if (infinite()) {
                     return null;
                 }
             }
-            //Return the path to the goal
+            //Devolver el camino a la meta
             return camino;
         }
 
         public boolean testMap() {
-            //This function checks some basic map requirements like having a goal
+            //Esta función comprueba algunos requisitos básicos del mapa como tener un objetivo
             if (teleList.size() == 1) {
                 return false;
             }
@@ -105,24 +105,24 @@ class Bender {
         }
 
         public void turn() {
-            //In each pre-defined direction...
+            //En cada dirección predefinido...
             for (char c : direcciones) {
-                //look forward for a wall
+                //esperar una pared
                 if (checkWall()) {
-                    //If there is no wall we're done
+                    //Si no hay muro hemos terminado
                     break;
                 }
-                //If there is a wall try the next direction
+                //Si hay una pared intente la siguiente dirección
                 direccion = c;
             }
         }
 
         public void move() {
-            //Store the instance of x and y in order to make less calls to them
+            //Almacene la instancia de x e y para hacer menos llamadas a ellos
             int x = actual.x;
             int y = actual.y;
 
-            //Move one cell in the pre established direction
+            //Mover una celda en la dirección preestable establecida
             switch (this.direccion) {
                 case 'S':
                     actual = mapa[x + 1][y];
@@ -137,17 +137,17 @@ class Bender {
                     actual = mapa[x][y - 1];
                     break;
             }
-            //Store the movement in the path
+            //Almacene el movimiento en el camino
             camino += this.direccion;
         }
 
         public boolean checkWall() {
-            //Store the instance of x and y in order to make less calls to them
+            //Almacene la instancia de x e y para hacer menos llamadas a ellos
             int x = actual.x;
             int y = actual.y;
             casilla target = new casilla();
 
-            //Try to get the next cell in the pre established direction
+            //Trate de obtener la siguiente celda en la dirección preestable establecida
             try {
                 switch (this.direccion) {
                     case 'S':
@@ -164,17 +164,17 @@ class Bender {
                         break;
                 }
             } catch (Exception ignore) {
-                //We have to try it in the case that there is no cell in the direction we are looking at
+                //Tenemos que intentarlo en el caso de que no haya ninguna célula en la dirección que estamos mirando
             }
 
-            //Return true if the next cell over is not a wall, false if it is
+            //Devolver true si la siguiente celda sobre no es un muro, false si es
             return !target.type.equals("wall");
 
 
         }
 
         public casilla teleport() {
-            //Remove the current teleport from the list
+            //Retire el teletransporte actual de la lista
             for (int i = 0; i < teleList.size(); i++) {
                 if (teleList.get(i) == actual) {
                     teleList.remove(i);
@@ -182,35 +182,36 @@ class Bender {
             }
 
             casilla baseCell = teleList.get(0);
-            //Store the instance of x and y in order to make less calls to them
+            //Almacene la instancia de x e y para hacer menos llamadas a ellos
             int x = actual.x;
             int y = actual.y;
 
-            //Set the default closest teleport as the first of the list
+            //Establezca el teletransporte más cercano predeterminado como el primero de la lista
             int base = (Math.abs(baseCell.x - x)) + (Math.abs(baseCell.y - y));
             int idx = 0;
-            //For each teleporter in the list...
+            //Para cada teletransportador de la lista...
             for (int c = 1; c < teleList.size(); c++) {
-                //we instance it for a more efficient run-time
+                //lo buscamos para un tiempo de ejecución más eficiente
                 casilla tmpCell = teleList.get(c);
-                //we then get the distance from the current teleporter to the current cell
+                //entonces obtenemos la distancia desde el teletransportador actual a la célula actual
                 int tmpBase = (Math.abs(tmpCell.x - x)) + (Math.abs(tmpCell.y - y));
-                //If the current teleporter is closer than the base one we set the new one as the base one
+                //Si el teletransportador actual está más cerca que el base, establecemos el nuevo como base
                 if (tmpBase < base) {
                     idx = c;
                     base = tmpBase;
                     baseCell = teleList.get(0);
-                } else if (tmpBase == base) { //If the distance is the same we have to obtain the one with the shortest angle
+                } else if (tmpBase == base) {
+                    //Si la distancia es la misma tenemos que obtener la que tiene el ángulo más corto
                     if (preferableTeleport(actual, baseCell, tmpCell)) {
-                        //If the new one has a shorter angle we set it as the new base
+                        //Si el nuevo tiene un ángulo más corto lo establecemos como la nueva base
                         idx = c;
                         baseCell = teleList.get(c);
                     }
                 }
             }
-            //We change our position to the closest teleport
+            //Cambiamos nuestra posición al teletransporte más cercano
             actual = teleList.get(idx);
-            //We add the original teleport back to the list for potential future teleportations
+            //Añadimos el teletransporte original a la lista para posibles teletransportaciones futuras
             teleList.add(actual);
             return teleList.get(idx);
 
@@ -218,18 +219,18 @@ class Bender {
         }
 
         public boolean preferableTeleport(casilla reference, casilla cell1, casilla cell2) {
-            //Get the tangent of two points
+            //Consigue la tangente de dos puntos
             double angle1 = Math.toDegrees(Math.atan2((cell1.y - reference.y), (cell1.x - reference.x)));
             angle1 -= 180;
             double angle2 = Math.toDegrees(Math.atan2((cell2.y - reference.y), (cell2.x - reference.x)));
             angle2 -= 180;
 
-            //Return true if the first angle is bigger than the second one
+            //Devolver true si el primer ángulo es más grande que el segundo
             return Math.abs(angle1) > Math.abs(angle2);
         }
 
         public void invert() {
-            //Switch the direction priorities
+            //Cambiar las prioridades de dirección
             if (!invertir) {
                 direcciones = new char[]{
                         'N',
@@ -250,57 +251,54 @@ class Bender {
         }
 
         public boolean infinite() {
-            //As there are 8 possible types of movements in our logic we can define that in the case that we pass by the
-            // same cell more than 8 times we have entered a infinite loop
+            //Como hay 8 posibles tipos de movimientos en nuestra lógica podemos definir que en el caso de que pasemos por el
+            //misma célula más de 8 veces hemos entrado en un bucle infinito
             actual.visits++;
             return actual.visits >= 8;
         }
 
-        //Here starts the shortest path calculator
+        //Aquí comienza la calculadora de ruta más corta
         public int caminoCorto() {
-            //We set the heuristic of each cell
+            //Establecemos la heurística de cada célula
             setHeuristic();
-            //We return the heuristic of the starting point as it is the minimum distance to the goal
+            //Devolvemos la heurística del punto de partida, ya que es la distancia mínima a la meta
             return mapa[comenzar.x][comenzar.y].heuristic;
         }
 
         public void setHeuristic() {
-            //We create two temporary lists in order to assign the heuristic value to each cell
+            //Creamos dos listas temporales para asignar el valor heurístico a cada célula
             List<casilla> openList = new LinkedList<casilla>();
             List<casilla> closedList = new LinkedList<casilla>();
-            //We set the value of the goal as 0
+            //Establecemos el valor de la meta como 0
             mapa[meta.x][meta.y].heuristic = 0;
-            //We add the goal to the open list
+            //Añadimos el objetivo a la lista abierta
             openList.add(mapa[meta.x][meta.y]);
-            boolean found = false; //We use this boolean to determine when to end the loop
-            //Until we find the starting point...
+            boolean found = false; //Usamos este booleano para determinar cuándo finalizar el bucle
+            //Hasta que encontremos el punto de partida...
             while (!found) {
-                //for each cell in the open list...
-                for (casilla cell : openList
-                ) {
-                    //get it's neighbors...
+                //para cada celda de la lista abierta...
+                for (casilla cell : openList) {
                     List<casilla> neighbors = assignNeighbors(cell);
-                    //for each neighbour...
                     for (casilla neighbour : neighbors) {
-                        //if they are the starting point end the loop
+                        //si son el punto de partida terminar el bucle
                         if (neighbour.type.equals("start")) {
                             found = true;
                             break;
                         }
-                        //add them to the closed list
+                        //añadirlos a la lista cerrada
                         closedList.add(neighbour);
                     }
                 }
-                //The open list becomes a copy of the closed list
+                //La lista abierta se convierte en una copia de la lista cerrada
                 openList = closedList;
-                //We reset the closed list
+                //Restablecemos la lista cerrada
                 closedList = new LinkedList<casilla>();
             }
 
         }
 
         public List<casilla> assignNeighbors(casilla cell) {
-            //We create the neighbors to the current cell
+            //Creamos los vecinos a la celda actual
             List<casilla> neighbors = new LinkedList<>();
             for (int i = 0; i < 4; i++) {
                 switch (i) {
@@ -317,14 +315,14 @@ class Bender {
                         actual = mapa[cell.x][cell.y - 1];
                         break;
                 }
-                //If the neighbour is a teleporter we add it's exit instead as the neighbour
+                //Si el vecino es un teletransportador añadimos su salida en su lugar como el vecino
                 if (actual.type.equals("teleport")) {
                     casilla tmp = teleport();
                     mapa[tmp.x][tmp.y].heuristic = cell.heuristic + 1;
                     neighbors.add(tmp);
                     break;
                 }
-                //If the neighbour is a walkable cell we assign it the heuristic and add it as a neighbour
+                //Si el vecino es una celda transitable le asignamos la heurística y la añadimos como vecino
                 if (actual.heuristic == null && !actual.type.equals("wall")) {
                     actual.heuristic = cell.heuristic + 1;
                     neighbors.add(actual);
@@ -338,12 +336,12 @@ class Bender {
     }
 
     class casilla {
-        //This are the attributes of each cell, although not all of them are necessary
-        String type; //Defines the function of the cell. Required
-        int x; //Defines the column of the map in which the cell can be found. Required
-        int y; //Defines the row of the map in which the cell can be found. Required
-        Integer heuristic = null; //Defines the distance from the cell to the goal
-        int visits; //Counts the number of instances in which the path has gone through the cell
+        //Estos son los atributos de cada celda, aunque no todos son necesarios
+        String type; //Define la función de la celda. Obligatorio
+        int x; //Define la columna del mapa en la que se puede encontrar la celda. Obligatorio
+        int y; //Define la fila del mapa en el que se puede encontrar la celda. Obligatorio
+        Integer heuristic = null; //Define la distancia de la celda al objetivo
+        int visits; //Cuenta el número de instancias en las que la ruta de acceso ha pasado por la celda
 
         public casilla() {
 
